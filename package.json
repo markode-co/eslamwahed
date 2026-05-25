@@ -11,6 +11,7 @@
     "ios:init": "npx cap add ios",
     "ios:sync": "npx cap sync ios",
     "ios:open": "npx cap open ios",
+    "db:setup": "node scripts/apply-supabase-schema.mjs",
     "start": "next start",
     "lint": "eslint"
   },
@@ -36,6 +37,7 @@
     "clsx": "^2.1.1",
     "lucide-react": "^1.16.0",
     "next": "^15.5.18",
+    "pg": "^8.21.0",
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "react-hook-form": "^7.76.1",
