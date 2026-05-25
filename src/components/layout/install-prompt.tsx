@@ -14,27 +14,48 @@ export function InstallPrompt() {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    if ("serviceWorker" in navigator) navigator.serviceWorker.register("/sw.js");
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("/sw.js");
+    }
+
     const handler = (e: Event) => {
       e.preventDefault();
-      setEvent(e as BeforeInstallPromptEvent);
-      if (!localStorage.getItem("installPromptDismissed")) setVisible(true);
+      const installEvent = e as BeforeInstallPromptEvent;
+      setEvent(installEvent);
+      if (!localStorage.getItem("installPromptDismissed")) {
+        setVisible(true);
+      }
     };
+
+    const installed = () => {
+      setVisible(false);
+      setEvent(null);
+      localStorage.setItem("installPromptDismissed", "1");
+    };
+
     window.addEventListener("beforeinstallprompt", handler);
-    return () => window.removeEventListener("beforeinstallprompt", handler);
+    window.addEventListener("appinstalled", installed);
+    return () => {
+      window.removeEventListener("beforeinstallprompt", handler);
+      window.removeEventListener("appinstalled", installed);
+    };
   }, []);
 
-  if (!visible) return null;
+  if (!visible || !event) return null;
 
   return (
     <div className="fixed bottom-5 right-5 z-40 flex max-w-sm items-center gap-3 rounded-lg border border-zinc-200 bg-white p-3 shadow-xl dark:border-zinc-800 dark:bg-zinc-950">
       <Download className="h-5 w-5 text-emerald-600" />
-      <p className="text-sm font-semibold">قم بتنزيل التطبيق للحصول على تجربة أفضل</p>
+      <p className="text-sm font-semibold">
+        قم بتنزيل التطبيق للحصول على تجربة أفضل
+      </p>
       <Button
         size="sm"
         onClick={async () => {
-          await event?.prompt();
+          await event.prompt();
+          await event.userChoice;
           setVisible(false);
+          setEvent(null);
         }}
       >
         تنزيل

@@ -15,18 +15,29 @@ export const checkoutSchema = z.object({
   coupon_code: z.string().optional(),
 });
 
+const optionalSalePrice = z.preprocess((value) => {
+  if (value === "" || value === null || typeof value === "undefined") return null;
+  return value;
+}, z.coerce.number().nonnegative("سعر الخصم لا يمكن أن يكون أقل من صفر").nullable());
+
 export const productSchema = z.object({
-  name: z.string().min(2),
-  slug: z.string().min(2).regex(/^[a-z0-9-]+$/),
+  name: z.string().trim().min(2, "اسم المنتج مطلوب"),
+  slug: z
+    .string()
+    .trim()
+    .min(2, "رابط المنتج مطلوب")
+    .regex(/^[\p{L}\p{N}-]+$/u, "رابط المنتج يقبل الحروف والأرقام والشرطة فقط"),
   category_id: z.string().uuid().nullable().optional(),
   short_description: z.string().nullable().optional(),
   description: z.string().nullable().optional(),
-  price: z.coerce.number().positive(),
-  sale_price: z.coerce.number().nonnegative().nullable().optional(),
-  stock: z.coerce.number().int().min(0),
-  status: z.enum(["draft", "active", "archived", "out_of_stock"]),
+  price: z.coerce.number().positive("السعر يجب أن يكون أكبر من صفر"),
+  sale_price: optionalSalePrice.optional(),
+  stock: z.coerce.number().int("المخزون يجب أن يكون رقما صحيحا").min(0, "المخزون لا يمكن أن يكون أقل من صفر"),
+  status: z.enum(["draft", "active", "archived", "out_of_stock"], {
+    message: "حالة المنتج غير صحيحة",
+  }),
   colors: z.array(z.string()).default([]),
   sizes: z.array(z.string()).default([]),
-  images: z.array(z.string().url()).default([]),
+  images: z.array(z.string().url("رابط الصورة غير صحيح")).default([]),
   is_featured: z.boolean().default(false),
 });

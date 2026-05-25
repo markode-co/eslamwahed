@@ -8,6 +8,15 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/layout/toast-provider";
 import { Product } from "@/lib/types";
 
+function createSlug(value: string) {
+  return value
+    .trim()
+    .toLowerCase()
+    .replace(/[^\p{L}\p{N}]+/gu, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 80);
+}
+
 export function ProductForm({ product }: { product?: Product }) {
   const router = useRouter();
   const toast = useToast();
@@ -44,9 +53,11 @@ export function ProductForm({ product }: { product?: Product }) {
 
   async function submit(formData: FormData) {
     setLoading(true);
+    const name = String(formData.get("name"));
+    const slug = String(formData.get("slug") || createSlug(name));
     const payload = {
-      name: String(formData.get("name")),
-      slug: String(formData.get("slug")),
+      name,
+      slug,
       category_id: null,
       short_description: String(formData.get("short_description") ?? ""),
       description: String(formData.get("description") ?? ""),
@@ -98,7 +109,7 @@ export function ProductForm({ product }: { product?: Product }) {
       className="grid gap-4 rounded-lg border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-950"
     >
       <Input name="name" placeholder="اسم المنتج" defaultValue={product?.name} required />
-      <Input name="slug" placeholder="slug-example" defaultValue={product?.slug} required />
+      <Input name="slug" placeholder="رابط المنتج، مثال: iphone-15 أو قميص-قطن" defaultValue={product?.slug} />
       <Input name="price" type="number" placeholder="السعر" defaultValue={product?.price} required />
       <Input name="sale_price" type="number" placeholder="سعر الخصم" defaultValue={product?.sale_price ?? ""} />
       <Input name="stock" type="number" placeholder="المخزون" defaultValue={product?.stock ?? 0} required />

@@ -9,8 +9,13 @@ export async function POST(request: Request) {
 
   const parsed = productSchema.safeParse(await request.json());
   if (!parsed.success) {
+    const issue = parsed.error.issues[0];
     return NextResponse.json(
-      { error: parsed.error.issues[0]?.message ?? "بيانات المنتج غير صحيحة" },
+      {
+        error: issue?.message ?? "بيانات المنتج غير صحيحة",
+        field: issue?.path.join("."),
+        issues: parsed.error.issues,
+      },
       { status: 400 },
     );
   }
