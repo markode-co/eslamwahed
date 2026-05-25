@@ -19,7 +19,6 @@ export function InstallPrompt() {
     }
 
     const handler = (e: Event) => {
-      e.preventDefault();
       const installEvent = e as BeforeInstallPromptEvent;
       setEvent(installEvent);
       if (!localStorage.getItem("installPromptDismissed")) {
@@ -52,8 +51,12 @@ export function InstallPrompt() {
       <Button
         size="sm"
         onClick={async () => {
-          await event.prompt();
-          await event.userChoice;
+          try {
+            await event.prompt();
+            await event.userChoice;
+          } catch {
+            // Some browsers show their native install UI when preventDefault is not used.
+          }
           setVisible(false);
           setEvent(null);
         }}

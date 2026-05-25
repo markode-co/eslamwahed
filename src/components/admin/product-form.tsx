@@ -8,15 +8,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/layout/toast-provider";
 import { Product } from "@/lib/types";
 
-function createSlug(value: string) {
-  return value
-    .trim()
-    .toLowerCase()
-    .replace(/[^\p{L}\p{N}]+/gu, "-")
-    .replace(/^-+|-+$/g, "")
-    .slice(0, 80);
-}
-
 export function ProductForm({ product }: { product?: Product }) {
   const router = useRouter();
   const toast = useToast();
@@ -53,11 +44,9 @@ export function ProductForm({ product }: { product?: Product }) {
 
   async function submit(formData: FormData) {
     setLoading(true);
-    const name = String(formData.get("name"));
-    const slug = String(formData.get("slug") || createSlug(name));
     const payload = {
-      name,
-      slug,
+      name: String(formData.get("name")),
+      english_name: String(formData.get("english_name")),
       category_id: null,
       short_description: String(formData.get("short_description") ?? ""),
       description: String(formData.get("description") ?? ""),
@@ -93,7 +82,9 @@ export function ProductForm({ product }: { product?: Product }) {
     if (!response.ok) {
       toast({
         title: "فشل حفظ المنتج",
-        description: result.error ?? "راجع البيانات ثم حاول مرة أخرى.",
+        description: result.field
+          ? `${result.error} (${result.field})`
+          : result.error ?? "راجع البيانات ثم حاول مرة أخرى.",
       });
       return;
     }
@@ -108,11 +99,38 @@ export function ProductForm({ product }: { product?: Product }) {
       action={submit}
       className="grid gap-4 rounded-lg border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-950"
     >
-      <Input name="name" placeholder="اسم المنتج" defaultValue={product?.name} required />
-      <Input name="slug" placeholder="رابط المنتج، مثال: iphone-15 أو قميص-قطن" defaultValue={product?.slug} />
-      <Input name="price" type="number" placeholder="السعر" defaultValue={product?.price} required />
-      <Input name="sale_price" type="number" placeholder="سعر الخصم" defaultValue={product?.sale_price ?? ""} />
-      <Input name="stock" type="number" placeholder="المخزون" defaultValue={product?.stock ?? 0} required />
+      <Input
+        name="name"
+        placeholder="اسم المنتج بالعربي"
+        defaultValue={product?.name}
+        required
+      />
+      <Input
+        name="english_name"
+        placeholder="اسم المنتج بالإنجليزي، مثال: iphone 15"
+        defaultValue={product?.slug?.replaceAll("-", " ")}
+        required
+      />
+      <Input
+        name="price"
+        type="number"
+        placeholder="السعر"
+        defaultValue={product?.price}
+        required
+      />
+      <Input
+        name="sale_price"
+        type="number"
+        placeholder="سعر الخصم"
+        defaultValue={product?.sale_price ?? ""}
+      />
+      <Input
+        name="stock"
+        type="number"
+        placeholder="المخزون"
+        defaultValue={product?.stock ?? 0}
+        required
+      />
       <select
         name="status"
         defaultValue={product?.status ?? "active"}
@@ -123,12 +141,32 @@ export function ProductForm({ product }: { product?: Product }) {
         <option value="out_of_stock">نفد المخزون</option>
         <option value="archived">مؤرشف</option>
       </select>
-      <Input name="colors" placeholder="الألوان مفصولة بفواصل" defaultValue={product?.colors?.join(", ")} />
-      <Input name="sizes" placeholder="المقاسات مفصولة بفواصل" defaultValue={product?.sizes?.join(", ")} />
-      <Input name="short_description" placeholder="وصف مختصر" defaultValue={product?.short_description ?? ""} />
-      <Textarea name="description" placeholder="وصف المنتج" defaultValue={product?.description ?? ""} />
+      <Input
+        name="colors"
+        placeholder="الألوان مفصولة بفواصل"
+        defaultValue={product?.colors?.join(", ")}
+      />
+      <Input
+        name="sizes"
+        placeholder="المقاسات مفصولة بفواصل"
+        defaultValue={product?.sizes?.join(", ")}
+      />
+      <Input
+        name="short_description"
+        placeholder="وصف مختصر"
+        defaultValue={product?.short_description ?? ""}
+      />
+      <Textarea
+        name="description"
+        placeholder="وصف المنتج"
+        defaultValue={product?.description ?? ""}
+      />
       <label className="flex items-center gap-2 text-sm font-semibold">
-        <input type="checkbox" name="is_featured" defaultChecked={product?.is_featured} />
+        <input
+          type="checkbox"
+          name="is_featured"
+          defaultChecked={product?.is_featured}
+        />
         منتج مميز
       </label>
       <Input
@@ -139,7 +177,9 @@ export function ProductForm({ product }: { product?: Product }) {
         onChange={(e) => Array.from(e.target.files ?? []).forEach(upload)}
       />
       {imageUrls.length ? (
-        <div className="text-sm text-zinc-500">{imageUrls.length} صورة جاهزة</div>
+        <div className="text-sm text-zinc-500">
+          {imageUrls.length} صورة جاهزة
+        </div>
       ) : null}
       <Button disabled={loading || uploading}>
         {loading ? "جاري الحفظ..." : uploading ? "جاري رفع الصور..." : "حفظ المنتج"}

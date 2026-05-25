@@ -4,14 +4,33 @@ import { createClient } from "@/lib/supabase/server";
 import { productSchema } from "@/lib/validations";
 import { getSupabaseErrorMessage } from "@/lib/supabase/errors";
 
+function toSlug(value: string) {
+  const slug = value
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 80);
+
+  return slug || `product-${Date.now().toString(36)}`;
+}
+
 export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
   await requireAdmin();
   const { id } = await params;
+  const body = await request.json();
+  const slug = toSlug(String(body.english_name ?? body.slug ?? body.name ?? ""));
 
-  const parsed = productSchema.safeParse(await request.json());
+  const parsed = productSchema.safeParse({
+    ...body,
+    slug,
+    category_id: body.category_id || null,
+    sale_price: body.sale_price || null,
+  });
+
   if (!parsed.success) {
     const issue = parsed.error.issues[0];
     return NextResponse.json(
