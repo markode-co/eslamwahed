@@ -1,0 +1,20 @@
+{
+  "name": "اسلام وحيد",
+  "short_name": "اسلام وحيد",
+  "description": "متجر إلكتروني عربي احترافي",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "dir": "rtl",
+  "lang": "ar",
+  "background_color": "#09090b",
+  "theme_color": "#059669",
+  "categories": ["shopping", "business"],
+  "icons": [
+    { "src": "/icons/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ],
+  "screenshots": [
+    { "src": "/icons/screenshot.svg", "sizes": "1280x720", "type": "image/svg+xml", "form_factor": "wide" }
+  ]
+}
